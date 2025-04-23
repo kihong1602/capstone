@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router(); // eslint-disable-line new-cap
 const {getFirestore, FieldValue} = require("firebase-admin/firestore");
 const bcrypt = require("bcrypt");
-const {createToken} = require("../util/JwtUtils");
+const {createToken} = require("../util/jwtUtils");
 
 const db = getFirestore();
 

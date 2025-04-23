@@ -1,20 +1,12 @@
 const express = require("express");
 const router = express.Router(); // eslint-disable-line new-cap
 const {getFirestore} = require("firebase-admin/firestore");
-const {getPayload} = require("../util/JwtUtils");
+const authenticate = require("../middleware/auth");
 
 const db = getFirestore();
 
-router.post("/semester", async (req, res) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader && !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorized",
-    });
-  }
-
-  const payload = getPayload(authHeader.split(" ")[1]);
+router.post("/semester", authenticate, async (req, res) => {
+  const payload = req.user;
 
   const {semester, startDate, endDate, isLongTerm} = req.body;
 
