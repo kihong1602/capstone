@@ -5,9 +5,9 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 const app = express();
 
-const usersRouter = require("./users/index");
+const authRouter = require("./auth/index");
 
 app.use(express.json());
-app.use("/api/users", usersRouter);
+app.use("/auth", authRouter);
 
 exports.api = functions.https.onRequest(app);

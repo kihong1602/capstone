@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router(); // eslint-disable-line new-cap
-const admin = require("firebase-admin");
+const {getFirestore, FieldValue} = require("firebase-admin/firestore");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const db = admin.firestore();
+const db = getFirestore();
 const JWT_SECRET = "your-jwt-secret-key"; // JWT Secret key는 추후 환경변수 예정
 
 router.post("/register", async (req, res) => {
@@ -49,7 +49,7 @@ router.post("/register", async (req, res) => {
       name: "", // 추후 업데이트할 수 있도록 빈 값으로 초기화
       language: "",
       isLongTerm: false,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: FieldValue.serverTimestamp(),
     });
 
     return res.status(200).json({
@@ -105,7 +105,6 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign(
         {
-          uid: user.id,
           email: user.email,
           role: user.role,
         },
