@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router(); // eslint-disable-line new-cap
-const authenticate = require("../../middleware/auth");
-const userRepository = require("../../repository/userRepository");
-const StayRequestRepository = require("../../repository/stayRequestRepository");
+const authenticate = require("../middleware/auth");
+const userRepository = require("../repository/userRepository");
+const StayRequestRepository = require("../repository/stayRequestRepository");
 
 router.post("/submit", authenticate, async (req, res) => {
   const payload = req.user;
@@ -13,7 +13,7 @@ router.post("/submit", authenticate, async (req, res) => {
       message: "외박 사유를 입력해주세요.",
     });
   }
-  // 신청일자 유효성 검증 필요
+  // 신청일자 유효성 검증 필요 ( 오늘 이후 날짜만, 그리고 이미 등록된 날짜)
 
   const result = await userRepository.findByEmail(payload.email);
   if (!result) {

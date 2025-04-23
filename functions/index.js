@@ -5,9 +5,9 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 const app = express();
 
-const authRouter = require("./routers/auth/index");
-const userRouter = require("./routers/user/index");
-const stayRouter = require("./routers/stay/index");
+const authRouter = require("./routers/authRouter");
+const userRouter = require("./routers/userRouter");
+const stayRouter = require("./routers/stayRouter");
 
 app.use(express.json());
 app.use("/auth", authRouter);

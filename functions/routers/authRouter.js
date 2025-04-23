@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router(); // eslint-disable-line new-cap
 const bcrypt = require("bcrypt");
-const {createToken} = require("../../util/jwtUtils");
-const UserRepository = require("../../repository/userRepository");
+const {createToken} = require("../util/jwtUtils");
+const UserRepository = require("../repository/userRepository");
 
 router.post("/register", async (req, res) => {
   try {
