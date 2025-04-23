@@ -1,23 +1,13 @@
-const {logger} = require("firebase-functions/logger");
-const {onRequest} = require("firebase-functions/v2/https");
-const {onDocumentCreated} = require("firebase-functions/v2/firestore");
+const functions = require("firebase-functions");
+const express = require("express");
+const admin = require("firebase-admin");
 
-const {initializeApp} = require("firebase-admin/app");
-const {getFirestore} = require("firebase-admin/firestore");
+admin.initializeApp();
+const app = express();
 
-initializeApp();
+const usersRouter = require("./users/index");
 
-exports.makeuppercase = onDocumentCreated("/messages/{documentId}", (event) => {
-  const original = event.data.data().original;
-  logger.log("Uppercasing", event.params.documentId, original);
-  const uppercase = original.toUpperCase();
-  return event.data.ref.set({uppercase}, {merge: true});
-});
+app.use(express.json());
+app.use("/api/users", usersRouter);
 
-exports.addmessage = onRequest(async (req, res) => {
-  const original = req.query.text;
-  const writeResult = await getFirestore()
-      .collection("messages")
-      .add({original: original});
-  res.json({result: `Message with ID: ${writeResult.id} added.`});
-});
+exports.api = functions.https.onRequest(app);
