@@ -2,10 +2,9 @@ const express = require("express");
 const router = express.Router(); // eslint-disable-line new-cap
 const {getFirestore, FieldValue} = require("firebase-admin/firestore");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const {createToken} = require("../util/JwtUtils");
 
 const db = getFirestore();
-const JWT_SECRET = "your-jwt-secret-key"; // JWT Secret key는 추후 환경변수 예정
 
 router.post("/register", async (req, res) => {
   try {
@@ -103,14 +102,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const token = jwt.sign(
-        {
-          email: user.email,
-          role: user.role,
-        },
-        JWT_SECRET,
-        {expiresIn: "24h"},
-    );
+    const token = createToken(user);
 
     return res.status(200).json({
       success: true,
