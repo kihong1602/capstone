@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router(); // eslint-disable-line new-cap
 const bcrypt = require("bcrypt");
 const {createToken} = require("../util/jwtUtils");
-const UserRepository = require("../repository/userRepository");
+const userRepository = require("../repository/userRepository");
 
 router.post("/register", async (req, res) => {
   try {
@@ -20,7 +20,7 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    const isExist = await UserRepository.findByEmail(email);
+    const isExist = await userRepository.findByEmail(email);
 
     if (isExist) {
       return res.status(409).json({
@@ -31,7 +31,7 @@ router.post("/register", async (req, res) => {
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    await UserRepository.save({
+    await userRepository.save({
       email: email,
       passwordHash: passwordHash,
       role: role,
@@ -58,7 +58,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const result = await UserRepository.findByEmail(email);
+    const result = await userRepository.findByEmail(email);
 
     if (!result) {
       return res.status(404).json({

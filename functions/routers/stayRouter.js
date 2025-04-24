@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router(); // eslint-disable-line new-cap
 const authenticate = require("../middleware/auth");
 const userRepository = require("../repository/userRepository");
-const StayRequestRepository = require("../repository/stayRequestRepository");
+const stayRequestRepository = require("../repository/stayRequestRepository");
 
 router.post("/submit", authenticate, async (req, res) => {
   const payload = req.user;
@@ -29,11 +29,31 @@ router.post("/submit", authenticate, async (req, res) => {
     requestTime: requestTime,
   };
 
-  await StayRequestRepository.save(stayRequest, userRef.id);
+  await stayRequestRepository.save(stayRequest, userRef.id);
+
+  // RequestTime이 특정 시간 이후인 경우 벌점 부여
 
   return res.status(200).json({
     success: true,
     message: "외박 신청 완료",
+  });
+});
+
+router.get("/history", authenticate, async (req, res) => {
+  const payload = req.user;
+
+  const result = await userRepository.findByEmail(payload.email);
+  if (!result) {
+    return res.status(404).json({
+      message: "등록되지 않은 회원입니다.",
+    });
+  }
+  const {ref: userRef} = result;
+
+  const stayRequests = await stayRequestRepository.findByUserId(userRef.id);
+
+  return res.status(200).json({
+    stayRequests,
   });
 });
 
