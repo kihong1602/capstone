@@ -62,6 +62,28 @@ class PenaltyRepository {
 
     await batch.commit();
   }
+
+  /** 회원 벌점 내역 조회
+   * @param {string} userId
+   * @return {Promise<Array<Object>>} */
+  async findByUserId(userId) {
+    const snapshot = await db
+        .where("userId", "==", userId)
+        .orderBy("date", "desc")
+        .get();
+
+    if (snapshot.empty) {
+      return [];
+    }
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        date: data.date,
+        reason: data.reason,
+        points: data.points,
+      };
+    });
+  }
 }
 
 module.exports = new PenaltyRepository();
