@@ -40,6 +40,20 @@ class StayRequestRepository {
     });
   }
 
+  /** ID 기반 외박 신청 내역 조회
+   * @param {string} id - 외박 신청 내역 ID
+   * */
+  async findById(id) {
+    const doc = await db.doc(id).get();
+    if (!doc.exists) {
+      return null;
+    }
+    return {
+      ref: doc.ref,
+      data: doc.data(),
+    };
+  }
+
   /** 어제 외박신청 내역 조회
    * @param {string} yesterday
    * @return {Set<String>} 승인된 외박 신청이 있는 UserID Set*/
@@ -54,6 +68,30 @@ class StayRequestRepository {
       stayRequests.add(data.userId);
     });
     return stayRequests;
+  }
+
+  /** 외박 신청 내역 수정
+   * @param {string} id - 외박 신청내역 ID
+   * @param {Object} data - 변경할 데이터
+   * @param {string} data.reason - 외박 신청 사유
+   * @param {string} data.date - 외박 신청 일자
+   * @param {string} data.requestTime - 수정 시간
+   * */
+  async update(id, data) {
+    await db.doc(id).update({
+      reason: data.reason,
+      date: data.date,
+      requestTime: data.requestTime,
+    });
+  }
+
+  /** 외박 신청 내역 상태 변경
+   * @param {string} id - 외박 신청내역 ID
+   * @param {string} status - 변경할 상태 (StayStatus)*/
+  async updateStatus(id, status) {
+    await db.doc(id).update({
+      status: status,
+    });
   }
 }
 

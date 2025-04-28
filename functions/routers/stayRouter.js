@@ -5,7 +5,9 @@ const userRepository = require("../repository/user.repository");
 const stayRequestRepository = require("../repository/stayRequest.repository");
 const penaltyRepository = require("../repository/penalty.repository");
 const dayjs = require("dayjs");
+const {StayStatus} = require("../enums/stayStatus");
 
+/** 외박 신청 API*/
 router.post("/submit", authenticate, async (req, res) => {
   const payload = req.user;
   const {date, reason, requestTime} = req.body;
@@ -58,6 +60,7 @@ router.post("/submit", authenticate, async (req, res) => {
   });
 });
 
+/** 외박 신청내역 조회 API*/
 router.get("/history", authenticate, async (req, res) => {
   const payload = req.user;
 
@@ -73,6 +76,102 @@ router.get("/history", authenticate, async (req, res) => {
 
   return res.status(200).json({
     stayRequests,
+  });
+});
+
+/** 외박 신청내역 수정 API*/
+router.put("/update/:id", authenticate, async (req, res) => {
+  const stayRequestId = req.params.id;
+  const payload = req.user;
+  const {date, reason, requestTime} = req.body;
+
+  const user = await userRepository.findByEmail(payload.email);
+  if (!user) {
+    return res.status(404).json({
+      message: "회원 정보가 존재하지 않습니다.",
+    });
+  }
+  const userRef = user.ref;
+
+  const stayRequest = await stayRequestRepository.findById(stayRequestId);
+
+  if (!stayRequest) {
+    return res.status(404).json({
+      message: "신청 내역이 존재하지 않습니다.",
+    });
+  }
+
+  const data = stayRequest.data;
+
+  if (data.userId !== userRef.id) {
+    return res.status(403).json({
+      message: "본인의 신청 내역만 수정할 수 있습니다.",
+    });
+  }
+
+  if (data.status !== StayStatus.PENDING) {
+    return res.status(400).json({
+      message: "이미 처리된 신청 내역은 수정할 수 없습니다.",
+    });
+  }
+
+  const today = dayjs().format("YYYY-MM-DD");
+  if (dayjs(date).isBefore(today)) {
+    return res.status(400).json({
+      message: "오늘 이후 날짜만 외박 신청이 가능합니다.",
+    });
+  }
+
+  await stayRequestRepository.update(stayRequestId, {
+    reason: reason,
+    date: date,
+    requestTime: requestTime,
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "신청 내역 수정 완료",
+  });
+});
+
+/** 외박 신청 취소 API*/
+router.delete("/cancel/:id", authenticate, async (req, res) => {
+  const payload = req.user;
+  const id = req.params.id;
+  const stayRequest = await stayRequestRepository.findById(id);
+
+  const userResult = await userRepository.findByEmail(payload.email);
+  if (!userResult) {
+    return res.status(404).json({
+      message: "회원 정보가 존재하지 않습니다.",
+    });
+  }
+
+  if (!stayRequest) {
+    return res.status(404).json({
+      message: "신청 내역이 존재하지 않습니다.",
+    });
+  }
+
+  const data = stayRequest.data;
+
+  if (data.userId !== userResult.ref.id) {
+    return res.status(403).json({
+      message: "본인의 신청 내역만 취소할 수 있습니다.",
+    });
+  }
+
+  if (data.status !== StayStatus.PENDING) {
+    return res.status(400).json({
+      message: "이미 처리된 신청 내역은 수정할 수 없습니다.",
+    });
+  }
+
+  await stayRequestRepository.updateStatus(id, StayStatus.CANCELLED);
+
+  return res.status(200).json({
+    success: true,
+    message: "외박 신청 취소 완료",
   });
 });
 
