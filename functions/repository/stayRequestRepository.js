@@ -39,6 +39,22 @@ class StayRequestRepository {
       };
     });
   }
+
+  /** 어제 외박신청 내역 조회
+   * @param {string} yesterday
+   * @return {Set<String>} 승인된 외박 신청이 있는 UserID Set*/
+  async findByYesterday(yesterday) {
+    const snapshot = await db
+        .where("date", "==", yesterday)
+        .where("status", "==", StayStatus.APPROVED)
+        .get();
+    const stayRequests = new Set();
+    snapshot.docs.map((doc) => {
+      const data = doc.data();
+      stayRequests.add(data.userId);
+    });
+    return stayRequests;
+  }
 }
 
 module.exports = new StayRequestRepository();

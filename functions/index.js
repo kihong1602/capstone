@@ -1,6 +1,7 @@
 const functions = require("firebase-functions");
 const express = require("express");
 const admin = require("firebase-admin");
+const {scheduledTask} = require("./routers/schedule");
 
 admin.initializeApp();
 const app = express();
@@ -17,3 +18,4 @@ app.use("/stay", stayRouter);
 app.use("/entry", entryRouter);
 
 exports.api = functions.https.onRequest(app);
+exports.scheduledTask = scheduledTask;

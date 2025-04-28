@@ -16,6 +16,21 @@ class SemesterRepository {
       endDate: semester.endDate,
     });
   }
+
+  /** 학기별 회원 조회
+   * @param {string} semester
+   * */
+  async findUserBySemester(semester) {
+    const snapshot = await db
+        .where("semester", "==", semester)
+        .get();
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        userId: data.userId,
+      };
+    });
+  }
 }
 
 module.exports = new SemesterRepository();
