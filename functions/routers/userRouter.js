@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router(); // eslint-disable-line new-cap
 const authenticate = require("../middleware/auth");
-const userRepository = require("../repository/userRepository");
-const semesterRepository = require("../repository/semesterRepository");
+const userRepository = require("../repository/user.repository");
+const semesterRepository = require("../repository/semester.repository");
 
 router.post("/semester", authenticate, async (req, res) => {
   const payload = req.user;

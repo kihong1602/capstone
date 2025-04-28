@@ -1,10 +1,9 @@
 const {onSchedule} = require("firebase-functions/v2/scheduler");
-const {getFirestore, FieldValue} = require("firebase-admin/firestore");
-const semesterRepository = require("../repository/semesterRepository");
-const stayRequestRepository = require("../repository/stayRequestRepository");
-const entryLogRepository = require("../repository/entryLogRepository");
+const semesterRepository = require("../repository/semester.repository");
+const stayRequestRepository = require("../repository/stayRequest.repository");
+const entryLogRepository = require("../repository/entryLog.repository");
+const penaltyRepository = require("../repository/penalty.repository");
 const dayjs = require("dayjs");
-const db = getFirestore();
 
 const schedule = {
   schedule: "every day 00:30",
@@ -84,33 +83,7 @@ async function scheduledTask() {
     }
   }
 
-  const batch = db.batch();
-
-  for (const studentId of noEntryStudents) {
-    const penaltyRef = db.collection("Penalties").doc();
-    batch.set(penaltyRef, {
-      id: penaltyRef.id,
-      userId: studentId,
-      date: formattedYesterday,
-      reason: "무단 외박",
-      points: 3,
-      createdAt: FieldValue.serverTimestamp(),
-    });
-  }
-  for (const student of lateEntryStudents) {
-    const entryTime = dayjs(student.entryTime).format("HH:mm:ss");
-    const penaltyRef = db.collection("Penalties").doc();
-    batch.set(penaltyRef, {
-      id: penaltyRef.id,
-      userId: student.userId,
-      date: formattedYesterday,
-      reason: `17시 이후 입실 (${entryTime})`,
-      points: 1,
-      createdAt: FieldValue.serverTimestamp(),
-    });
-  }
-
-  await batch.commit();
+  await penaltyRepository.batchSave(formattedYesterday, noEntryStudents, lateEntryStudents);
 }
 
 exports.scheduledTask = onSchedule(schedule, scheduledTask);
